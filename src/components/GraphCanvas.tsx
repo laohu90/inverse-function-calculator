@@ -1,12 +1,14 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Eye, Download } from 'lucide-react';
 import { InverseSolution } from '../types/math';
+import { TranslationDictionary } from '../i18n/translations';
 
 interface GraphCanvasProps {
   solution: InverseSolution;
+  t?: TranslationDictionary['graph'];
 }
 
-export const GraphCanvas: React.FC<GraphCanvasProps> = ({ solution }) => {
+export const GraphCanvas: React.FC<GraphCanvasProps> = ({ solution, t }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [scale, setScale] = useState<number>(35); // pixels per math unit
   const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -368,28 +370,28 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ solution }) => {
           <button
             onClick={() => setScale((s) => Math.min(s * 1.25, 180))}
             className="p-1.5 bg-white hover:bg-slate-100 text-slate-700 rounded border border-slate-300 transition"
-            title="Zoom In"
+            title={t?.zoomIn || 'Zoom In'}
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setScale((s) => Math.max(s * 0.8, 10))}
             className="p-1.5 bg-white hover:bg-slate-100 text-slate-700 rounded border border-slate-300 transition"
-            title="Zoom Out"
+            title={t?.zoomOut || 'Zoom Out'}
           >
             <ZoomOut className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={handleReset}
             className="p-1.5 bg-white hover:bg-slate-100 text-slate-700 rounded border border-slate-300 transition"
-            title="Reset View"
+            title={t?.resetView || 'Reset View'}
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={handleExport}
             className="p-1.5 bg-white hover:bg-slate-100 text-slate-700 rounded border border-slate-300 transition"
-            title="Download Graph Image"
+            title={t?.download || 'Download Graph Image'}
           >
             <Download className="w-3.5 h-3.5" />
           </button>
@@ -410,9 +412,9 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ solution }) => {
 
         {/* Floating probe slider */}
         {showProbe && (
-          <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-lg p-2.5 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-lg p-2.5 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-slate-700">Probe x-value:</span>
+              <span className="font-medium text-slate-700">{t?.probeLabel || 'Probe x-value:'}</span>
               <input
                 type="range"
                 min="-6"
@@ -424,9 +426,9 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ solution }) => {
               />
               <span className="font-mono font-semibold text-blue-700 w-8">{probeX.toFixed(1)}</span>
             </div>
-            <div className="text-slate-600 flex items-center gap-2">
+            <div className="text-slate-600 flex items-center gap-2 text-xs">
               <span className="inline-block w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
-              <span>Notice how <strong>(a, b)</strong> flips across <strong>y = x</strong> to become <strong>(b, a)</strong>!</span>
+              <span>{t?.probeNote || 'Notice how (a, b) flips across y = x to become (b, a)!'}</span>
             </div>
           </div>
         )}

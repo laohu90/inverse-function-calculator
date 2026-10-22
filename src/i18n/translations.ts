@@ -12,6 +12,7 @@ export interface TranslationDictionary {
   printBtn: string;
   shareBtn: string;
   copiedNotice: string;
+  recent: string;
   tabs: {
     solver: string;
     completingSquare: string;
@@ -30,7 +31,25 @@ export interface TranslationDictionary {
     quadBranchLeft: string;
     parabolaBranch: string;
   };
+  functionFamilies: Record<string, { label: string; desc: string; badge: string }>;
+  coefficients: {
+    coefA: string;
+    coefB: string;
+    coefC: string;
+    coefD: string;
+    coefM: string;
+    shiftH: string;
+    shiftK: string;
+    numerator: string;
+    denominator: string;
+  };
   subviews: {
+    steps: string;
+    table: string;
+    evaluator: string;
+    calculus: string;
+  };
+  subviewStatuses: {
     steps: string;
     table: string;
     evaluator: string;
@@ -80,6 +99,15 @@ export interface TranslationDictionary {
     oneToOne: string;
     requiresDomainCut: string;
   };
+  graph: {
+    zoomIn: string;
+    zoomOut: string;
+    resetView: string;
+    download: string;
+    probeToggle: string;
+    probeLabel: string;
+    probeNote: string;
+  };
   footerText: string;
 }
 
@@ -96,6 +124,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
     printBtn: 'Print Worksheet',
     shareBtn: 'Share',
     copiedNotice: 'Copied!',
+    recent: 'Recent:',
     tabs: {
       solver: 'Inverse Solver & Steps',
       completingSquare: 'Completing the Square Breakdown',
@@ -114,11 +143,36 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       quadBranchLeft: 'Left Branch (- root, x ≤ h)',
       parabolaBranch: 'Parabola Branch',
     },
+    functionFamilies: {
+      quadratic: { label: 'Quadratic (x²)', desc: 'Completing Square', badge: 'Popular' },
+      rational: { label: 'Rational Fraction', desc: 'Cross-Multiply & Factor', badge: 'Key Skill' },
+      linear: { label: 'Linear (mx + b)', desc: 'Slope reciprocal', badge: '' },
+      radical: { label: 'Square Root (√x)', desc: 'Domain restriction', badge: '' },
+      exponential: { label: 'Exponential (eˣ)', desc: 'Logarithm ln(x)', badge: '' },
+      cubic: { label: 'Cubic (x³)', desc: 'Cube root (∛x)', badge: '' },
+    },
+    coefficients: {
+      coefA: 'Leading Coefficient a',
+      coefB: 'Linear Coefficient b',
+      coefC: 'Constant Term c',
+      coefD: 'Vertical Shift d',
+      coefM: 'Slope m',
+      shiftH: 'Horizontal Shift h',
+      shiftK: 'Vertical Shift k',
+      numerator: 'Numerator (ax + b)',
+      denominator: 'Denominator (cx + d)',
+    },
     subviews: {
       steps: '4-Step Derivation',
       table: 'Values Table (x↔y)',
       evaluator: 'Point Evaluator f⁻¹(a)',
       calculus: 'HLT & Calculus f\'(x)',
+    },
+    subviewStatuses: {
+      steps: 'Steps Generated',
+      table: 'Coordinate Reflection Verification',
+      evaluator: 'Real-time Point Substitution',
+      calculus: 'Horizontal Line Test Proof',
     },
     result: {
       title: 'Inverse Function Result',
@@ -164,6 +218,15 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       oneToOne: 'Strictly One-to-One',
       requiresDomainCut: 'Requires Domain Cut',
     },
+    graph: {
+      zoomIn: 'Zoom In',
+      zoomOut: 'Zoom Out',
+      resetView: 'Reset View',
+      download: 'Download Image',
+      probeToggle: 'Coordinate Probe',
+      probeLabel: 'Probe x-value:',
+      probeNote: 'Notice how (a, b) flips across y = x to become (b, a)!',
+    },
     footerText: 'Inverse Function Calculator & Completing the Square Solver • High School Algebra & Precalculus',
   },
 
@@ -179,29 +242,55 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
     printBtn: 'Imprimir Hoja',
     shareBtn: 'Compartir',
     copiedNotice: '¡Copiado!',
+    recent: 'Recientes:',
     tabs: {
       solver: 'Calculadora y Pasos',
-      completingSquare: 'Desglose: Completar el Cuadrado',
-      completingSquareBadge: 'Punto Clave',
+      completingSquare: 'Completar el Cuadrado',
+      completingSquareBadge: 'Profundizar',
       examples: 'Ejemplos Resueltos (12+)',
-      practice: 'Cuestionario de Práctica',
-      guide: 'Guía y Preguntas Frecuentes',
+      practice: 'Cuestionario Práctico',
+      guide: 'Guía de Temario y FAQ',
     },
     input: {
-      placeholder: 'Escribe la función: ej. x^2 + 4x + 1 o (2x+3)/(x-5) o 3x - 7',
+      placeholder: 'Escribe la ecuación: ej. x^2 + 4x + 1 o (2x+3)/(x-5) o 3x - 7',
       coefficientsTitle: 'Coeficientes de la Función',
-      coefficientsSubtitle: '(Ajusta los deslizadores o números para resolver en tiempo real)',
-      presetsLabel: 'Preajustes:',
-      selectFamily: 'Familia de Funciones:',
+      coefficientsSubtitle: '(Ajusta los controles o introduce números para resolver en tiempo real)',
+      presetsLabel: 'Ejemplos:',
+      selectFamily: 'Tipo de Función:',
       quadBranchRight: 'Rama derecha (+ raíz, x ≥ h)',
       quadBranchLeft: 'Rama izquierda (- raíz, x ≤ h)',
       parabolaBranch: 'Rama de la Parábola',
+    },
+    functionFamilies: {
+      quadratic: { label: 'Cuadrática (x²)', desc: 'Completar el Cuadrado', badge: 'Popular' },
+      rational: { label: 'Racional / Fracción', desc: 'Multiplicar en cruz y Factorizar', badge: 'Clave' },
+      linear: { label: 'Lineal (mx + b)', desc: 'Pendiente recíproca', badge: '' },
+      radical: { label: 'Raíz Cuadrada (√x)', desc: 'Restricción de dominio', badge: '' },
+      exponential: { label: 'Exponencial (eˣ)', desc: 'Logaritmo ln(x)', badge: '' },
+      cubic: { label: 'Cúbica (x³)', desc: 'Raíz cúbica (∛x)', badge: '' },
+    },
+    coefficients: {
+      coefA: 'Coeficiente Principal a',
+      coefB: 'Coeficiente Lineal b',
+      coefC: 'Término Constante c',
+      coefD: 'Desplazamiento Vertical d',
+      coefM: 'Pendiente m',
+      shiftH: 'Desplazamiento Horizontal h',
+      shiftK: 'Desplazamiento Vertical k',
+      numerator: 'Numerador (ax + b)',
+      denominator: 'Denominador (cx + d)',
     },
     subviews: {
       steps: 'Derivación en 4 Pasos',
       table: 'Tabla de Valores (x↔y)',
       evaluator: 'Evaluar Punto f⁻¹(a)',
       calculus: 'Prueba Recta Horizontal y f\'(x)',
+    },
+    subviewStatuses: {
+      steps: 'Pasos Generados',
+      table: 'Verificación de Reflejo de Coordenadas',
+      evaluator: 'Sustitución de Puntos en Tiempo Real',
+      calculus: 'Demostración de Recta Horizontal',
     },
     result: {
       title: 'Resultado de la Función Inversa',
@@ -247,6 +336,15 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       oneToOne: 'Estrictamente Biyectiva',
       requiresDomainCut: 'Requiere Restricción de Dominio',
     },
+    graph: {
+      zoomIn: 'Acercar',
+      zoomOut: 'Alejar',
+      resetView: 'Restablecer Vista',
+      download: 'Descargar Imagen',
+      probeToggle: 'Sonda de Coordenadas',
+      probeLabel: 'Valor x de prueba:',
+      probeNote: '¡Observa cómo (a, b) se refleja en y = x para convertirse en (b, a)!',
+    },
     footerText: 'Calculadora de Función Inversa y Completar el Cuadrado • Álgebra y Precálculo',
   },
 
@@ -262,6 +360,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
     printBtn: 'Imprimer',
     shareBtn: 'Partager',
     copiedNotice: 'Copié !',
+    recent: 'Récents:',
     tabs: {
       solver: 'Résolveur & Étapes',
       completingSquare: 'Complétion du Carré',
@@ -280,11 +379,36 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       quadBranchLeft: 'Branche gauche (- racine, x ≤ h)',
       parabolaBranch: 'Branche de la Parabole',
     },
+    functionFamilies: {
+      quadratic: { label: 'Quadratique (x²)', desc: 'Complétion du Carré', badge: 'Populaire' },
+      rational: { label: 'Fonction Rationnelle', desc: 'Produit en Croix', badge: 'Essentiel' },
+      linear: { label: 'Linéaire (mx + b)', desc: 'Pente réciproque', badge: '' },
+      radical: { label: 'Racine Carrée (√x)', desc: 'Restriction du domaine', badge: '' },
+      exponential: { label: 'Exponentielle (eˣ)', desc: 'Logarithme ln(x)', badge: '' },
+      cubic: { label: 'Cubique (x³)', desc: 'Racine cubique (∛x)', badge: '' },
+    },
+    coefficients: {
+      coefA: 'Coefficient Principal a',
+      coefB: 'Coefficient Linéaire b',
+      coefC: 'Terme Constant c',
+      coefD: 'Décalage Vertical d',
+      coefM: 'Pente m',
+      shiftH: 'Décalage Horizontal h',
+      shiftK: 'Décalage Vertical k',
+      numerator: 'Numérateur (ax + b)',
+      denominator: 'Dénominateur (cx + d)',
+    },
     subviews: {
       steps: 'Dérivation en 4 Étapes',
       table: 'Tableau de Valeurs (x↔y)',
       evaluator: 'Évaluer un Point f⁻¹(a)',
       calculus: 'Test de la Droite Horizontale & f\'(x)',
+    },
+    subviewStatuses: {
+      steps: 'Étapes Générées',
+      table: 'Vérification de Symétrie',
+      evaluator: 'Substitution de Points',
+      calculus: 'Preuve par Droite Horizontale',
     },
     result: {
       title: 'Résultat de la Fonction Réciproque',
@@ -330,6 +454,15 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       oneToOne: 'Strictement Monotone / Bijective',
       requiresDomainCut: 'Restriction de Domaine Requise',
     },
+    graph: {
+      zoomIn: 'Zoom Avant',
+      zoomOut: 'Zoom Arrière',
+      resetView: 'Réinitialiser la Vue',
+      download: 'Télécharger l\'Image',
+      probeToggle: 'Sonde de Coordonnées',
+      probeLabel: 'Valeur test x:',
+      probeNote: 'Observez comment (a, b) s\'inverse par rapport à y = x pour devenir (b, a) !',
+    },
     footerText: 'Calculateur de Fonction Inverse & Forme Canonique • Algèbre & Analyse',
   },
 
@@ -345,6 +478,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
     printBtn: 'Imprimir Folha',
     shareBtn: 'Compartilhar',
     copiedNotice: 'Copiado!',
+    recent: 'Recentes:',
     tabs: {
       solver: 'Calculadora e Passos',
       completingSquare: 'Completar Quadrados',
@@ -363,11 +497,36 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       quadBranchLeft: 'Ramo esquerdo (- raiz, x ≤ h)',
       parabolaBranch: 'Ramo da Parábola',
     },
+    functionFamilies: {
+      quadratic: { label: 'Quadrática (x²)', desc: 'Completar Quadrados', badge: 'Popular' },
+      rational: { label: 'Função Racional', desc: 'Multiplicação Cruzada', badge: 'Essencial' },
+      linear: { label: 'Linear (mx + b)', desc: 'Inverso da inclinação', badge: '' },
+      radical: { label: 'Raiz Quadrada (√x)', desc: 'Restrição de domínio', badge: '' },
+      exponential: { label: 'Exponencial (eˣ)', desc: 'Logaritmo ln(x)', badge: '' },
+      cubic: { label: 'Cúbica (x³)', desc: 'Raiz cúbica (∛x)', badge: '' },
+    },
+    coefficients: {
+      coefA: 'Coeficiente Principal a',
+      coefB: 'Coeficiente Linear b',
+      coefC: 'Termo Constante c',
+      coefD: 'Deslocamento Vertical d',
+      coefM: 'Inclinação m',
+      shiftH: 'Deslocamento Horizontal h',
+      shiftK: 'Deslocamento Vertical k',
+      numerator: 'Numerador (ax + b)',
+      denominator: 'Denominador (cx + d)',
+    },
     subviews: {
       steps: 'Derivação em 4 Passos',
       table: 'Tabela de Valores (x↔y)',
       evaluator: 'Calcular Ponto f⁻¹(a)',
       calculus: 'Teste da Reta Horizontal e f\'(x)',
+    },
+    subviewStatuses: {
+      steps: 'Passos Gerados',
+      table: 'Verificação de Reflexão',
+      evaluator: 'Substituição de Ponto',
+      calculus: 'Teste da Reta Horizontal',
     },
     result: {
       title: 'Resultado da Função Inversa',
@@ -413,6 +572,15 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       oneToOne: 'Estritamente Injetora',
       requiresDomainCut: 'Requer Restrição de Domínio',
     },
+    graph: {
+      zoomIn: 'Aproximar',
+      zoomOut: 'Afastar',
+      resetView: 'Redefinir Vista',
+      download: 'Baixar Imagem',
+      probeToggle: 'Sonda de Coordenadas',
+      probeLabel: 'Valor x de teste:',
+      probeNote: 'Veja como (a, b) se reflete em y = x para virar (b, a)!',
+    },
     footerText: 'Calculadora de Função Inversa e Completar Quadrados • Álgebra e Pré-Cálculo',
   },
 
@@ -428,6 +596,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
     printBtn: '打印解题卷',
     shareBtn: '分享',
     copiedNotice: '已复制！',
+    recent: '最近输入:',
     tabs: {
       solver: '求反函数与详细推导',
       completingSquare: '配方法拆解深度剖析',
@@ -446,11 +615,36 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       quadBranchLeft: '左分支 (- 根号, x ≤ h)',
       parabolaBranch: '抛物线单调分支选择',
     },
+    functionFamilies: {
+      quadratic: { label: '二次函数 (x²)', desc: '配方法核心拆解', badge: '最热门' },
+      rational: { label: '分式函数 (ax+b)/(cx+d)', desc: '去分母移项因式分解', badge: '核心考点' },
+      linear: { label: '一次函数 (mx + b)', desc: '斜率倒数关系', badge: '' },
+      radical: { label: '根式函数 (√x)', desc: '被开方数非负限制', badge: '' },
+      exponential: { label: '指数函数 (eˣ)', desc: '自然对数 ln(x)', badge: '' },
+      cubic: { label: '三次函数 (x³)', desc: '立方根 (∛x)', badge: '' },
+    },
+    coefficients: {
+      coefA: '二次项系数 a',
+      coefB: '一次项系数 b',
+      coefC: '常数项 c',
+      coefD: '垂直平移常数 d',
+      coefM: '斜率 m',
+      shiftH: '水平位移 h',
+      shiftK: '垂直位移 k',
+      numerator: '分子项 (ax + b)',
+      denominator: '分母项 (cx + d)',
+    },
     subviews: {
       steps: '标准四步推导',
       table: '对照数值表 (x↔y)',
       evaluator: '特定点求值 f⁻¹(a)',
       calculus: '单调性与水平线检验 f\'(x)',
+    },
+    subviewStatuses: {
+      steps: '详细步骤已生成',
+      table: '坐标镜像对调验证',
+      evaluator: '特定数值实时代入',
+      calculus: '水平线检验与单调性分析',
     },
     result: {
       title: '反函数计算结果',
@@ -495,6 +689,15 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       criticalPointLabel: '驻点 / 顶点坐标:',
       oneToOne: '全实数域严格一一对应',
       requiresDomainCut: '必须截取单调分支',
+    },
+    graph: {
+      zoomIn: '放大图表',
+      zoomOut: '缩小图表',
+      resetView: '重置视角',
+      download: '下载图像',
+      probeToggle: '对称探测点',
+      probeLabel: '测试 x 坐标:',
+      probeNote: '直观观察点 (a, b) 是如何关于 y = x 对称翻转为 (b, a) 的！',
     },
     footerText: '反函数求解计算器与配方法拆解在线工具 • 高一与预备微积分核心考点',
   },

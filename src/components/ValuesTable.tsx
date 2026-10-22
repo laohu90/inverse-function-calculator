@@ -2,12 +2,14 @@ import React from 'react';
 import { MathView } from './MathView';
 import { ArrowLeftRight, Check } from 'lucide-react';
 import { InverseSolution } from '../types/math';
+import { TranslationDictionary } from '../i18n/translations';
 
 interface ValuesTableProps {
   solution: InverseSolution;
+  t: TranslationDictionary['table'];
 }
 
-export const ValuesTable: React.FC<ValuesTableProps> = ({ solution }) => {
+export const ValuesTable: React.FC<ValuesTableProps> = ({ solution, t }) => {
   // Generate sample points around key regions
   const samplePoints = React.useMemo(() => {
     const points: { x: number; fx: number | null; invFx: number | null }[] = [];
@@ -30,16 +32,16 @@ export const ValuesTable: React.FC<ValuesTableProps> = ({ solution }) => {
     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
         <div>
-          <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
             <ArrowLeftRight className="w-4 h-4 text-indigo-600" />
-            <span>Side-by-Side Table of Values & Coordinate Swap Proof</span>
+            <span>{t.title}</span>
           </h3>
-          <p className="text-xs text-slate-500">
-            See how every point <MathView math="(x, y)" /> on <MathView math="f(x)" /> reverses into <MathView math="(y, x)" /> on <MathView math="f^{-1}(x)" />.
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            {t.subtitle}
           </p>
         </div>
-        <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
-          f⁻¹(f(x)) = x Verified
+        <span className="text-xs font-semibold px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto font-mono">
+          f⁻¹(f(x)) = x
         </span>
       </div>
 
@@ -47,14 +49,14 @@ export const ValuesTable: React.FC<ValuesTableProps> = ({ solution }) => {
         <table className="w-full text-center text-sm border-collapse">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200 text-slate-700">
-              <th className="py-3 px-3.5 font-semibold text-left">Input x</th>
-              <th className="py-3 px-3.5 font-semibold text-blue-700">Output y = f(x)</th>
-              <th className="py-3 px-3.5 font-semibold text-slate-700">Point on f(x)</th>
-              <th className="py-3 px-3.5 font-semibold text-emerald-700">Reversed Point on f⁻¹(x)</th>
-              <th className="py-3 px-3.5 font-semibold text-indigo-700">Verification: f⁻¹(y)</th>
+              <th className="py-3 px-3.5 font-semibold text-left">{t.colInputX}</th>
+              <th className="py-3 px-3.5 font-semibold text-blue-700">{t.colOutputY}</th>
+              <th className="py-3 px-3.5 font-semibold text-slate-700">{t.colPointF}</th>
+              <th className="py-3 px-3.5 font-semibold text-emerald-700">{t.colPointInv}</th>
+              <th className="py-3 px-3.5 font-semibold text-indigo-700">{t.colCheck}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 font-mono">
+          <tbody className="divide-y divide-slate-100 font-mono text-sm">
             {samplePoints.map((pt, i) => {
               const isDefined = pt.fx !== null && isFinite(pt.fx);
               return (
@@ -63,7 +65,7 @@ export const ValuesTable: React.FC<ValuesTableProps> = ({ solution }) => {
                     {pt.x}
                   </td>
                   <td className="py-3 px-3.5 text-blue-700 font-bold">
-                    {isDefined ? Number(pt.fx!.toFixed(2)) : <span className="text-slate-400 font-sans italic text-xs">Undefined (Outside Domain)</span>}
+                    {isDefined ? Number(pt.fx!.toFixed(2)) : <span className="text-slate-400 font-sans italic text-xs">Undefined</span>}
                   </td>
                   <td className="py-3 px-3.5 text-slate-600">
                     {isDefined ? `(${pt.x}, ${Number(pt.fx!.toFixed(2))})` : '—'}
@@ -87,8 +89,8 @@ export const ValuesTable: React.FC<ValuesTableProps> = ({ solution }) => {
           </tbody>
         </table>
       </div>
-      <div className="text-xs sm:text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-        💡 <strong>Key takeaway for exams:</strong> If an exam gives you a table of values for <MathView math="f(x)" />, simply switch the two columns to find <MathView math="f^{-1}(x)" />!
+      <div className="text-xs sm:text-sm text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+        💡 <strong>{t.takeaway}</strong>
       </div>
     </div>
   );

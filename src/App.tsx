@@ -52,17 +52,44 @@ import { FunctionType, InverseSolution } from './types/math';
 import { Code, History } from 'lucide-react';
 
 export default function App() {
-  // Intelligent locale detection
-  const [locale, setLocale] = useState<SupportedLocale>(() => {
-    if (typeof window !== 'undefined' && window.navigator && window.navigator.language) {
-      const userLang = window.navigator.language.toLowerCase();
-      if (userLang.startsWith('es')) return 'es';
-      if (userLang.startsWith('fr')) return 'fr';
-      if (userLang.startsWith('pt')) return 'pt';
-      if (userLang.startsWith('zh')) return 'zh';
+  // STRICT DEFAULT: English ('en') for US & Global audience.
+  // Only override if user has an explicit URL query parameter (?lang=) or saved preference.
+  const [locale, setLocaleState] = useState<SupportedLocale>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlLang = urlParams.get('lang') || urlParams.get('hl');
+      if (urlLang && ['en', 'es', 'fr', 'pt', 'zh'].includes(urlLang.toLowerCase())) {
+        return urlLang.toLowerCase() as SupportedLocale;
+      }
+      try {
+        const saved = localStorage.getItem('inv_preferred_locale');
+        if (saved && ['en', 'es', 'fr', 'pt', 'zh'].includes(saved)) {
+          return saved as SupportedLocale;
+        }
+      } catch {
+        // ignore
+      }
     }
-    return 'en';
+    return 'en'; // DEFAULT IS STRICTLY ENGLISH
   });
+
+  const handleSelectLocale = (newLocale: SupportedLocale) => {
+    setLocaleState(newLocale);
+    try {
+      localStorage.setItem('inv_preferred_locale', newLocale);
+    } catch {
+      // ignore
+    }
+    if (typeof window !== 'undefined' && window.history) {
+      const url = new URL(window.location.href);
+      if (newLocale === 'en') {
+        url.searchParams.delete('lang');
+      } else {
+        url.searchParams.set('lang', newLocale);
+      }
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
 
   const t = useMemo(() => TRANSLATIONS[locale], [locale]);
 
@@ -360,7 +387,7 @@ ${solution.verificationSteps.composition1}
           {/* Action buttons + Language Selector */}
           <div className="flex items-center space-x-2 sm:space-x-3">
             {/* Language Selector Dropdown */}
-            <LanguageSelector currentLocale={locale} onSelectLocale={setLocale} />
+            <LanguageSelector currentLocale={locale} onSelectLocale={handleSelectLocale} />
 
             <button
               onClick={handleResetToDefault}
@@ -529,7 +556,7 @@ ${solution.verificationSteps.composition1}
           {recentFormulas && recentFormulas.length > 0 && (
             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs text-slate-500">
               <span className="font-semibold flex items-center gap-1 shrink-0 text-slate-600">
-                <History className="w-3.5 h-3.5 text-indigo-600" /> Recent:
+                <History className="w-3.5 h-3.5 text-indigo-600" /> {t.recent}
               </span>
               {recentFormulas.map((f, i) => (
                 <button
@@ -558,39 +585,36 @@ ${solution.verificationSteps.composition1}
                 </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                {[
-                  { id: 'quadratic', label: 'Quadratic (x²)', desc: 'Completing Square', badge: 'Popular' },
-                  { id: 'rational', label: 'Rational Fraction', desc: 'Cross-Multiply & Factor', badge: 'Key Skill' },
-                  { id: 'linear', label: 'Linear (mx + b)', desc: 'Slope reciprocal', badge: '' },
-                  { id: 'radical', label: 'Square Root (√x)', desc: 'Domain restriction', badge: '' },
-                  { id: 'exponential', label: 'Exponential (eˣ)', desc: 'Logarithm ln(x)', badge: '' },
-                  { id: 'cubic', label: 'Cubic (x³)', desc: 'Cube root (∛x)', badge: '' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setFunctionType(item.id as FunctionType);
-                      if (item.id === 'quadratic') setTypedFormula('x^2 + 4x + 1');
-                      if (item.id === 'rational') setTypedFormula('(2x + 3) / (x - 5)');
-                      if (item.id === 'linear') setTypedFormula('3x - 7');
-                      if (item.id === 'radical') setTypedFormula('sqrt(2x - 5) + 3');
-                      if (item.id === 'exponential') setTypedFormula('e^x - 2');
-                    }}
-                    className={`p-3.5 rounded-xl border text-left transition relative ${
-                      functionType === item.id
-                        ? 'bg-indigo-50/70 border-indigo-600 ring-2 ring-indigo-500/20 text-indigo-900'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    {item.badge && (
-                      <span className="absolute top-2.5 right-2.5 text-[11px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
-                        {item.badge}
-                      </span>
-                    )}
-                    <span className="font-bold text-sm block">{item.label}</span>
-                    <span className="text-xs text-slate-500">{item.desc}</span>
-                  </button>
-                ))}
+                {(['quadratic', 'rational', 'linear', 'radical', 'exponential', 'cubic'] as FunctionType[]).map((fam) => {
+                  const meta = t.functionFamilies[fam] || { label: fam, desc: '', badge: '' };
+                  return (
+                    <button
+                      key={fam}
+                      onClick={() => {
+                        setFunctionType(fam);
+                        if (fam === 'quadratic') setTypedFormula('x^2 + 4x + 1');
+                        if (fam === 'rational') setTypedFormula('(2x + 3) / (x - 5)');
+                        if (fam === 'linear') setTypedFormula('3x - 7');
+                        if (fam === 'radical') setTypedFormula('sqrt(2x - 5) + 3');
+                        if (fam === 'exponential') setTypedFormula('e^x - 2');
+                        if (fam === 'cubic') setTypedFormula('(x - 2)^3 - 1');
+                      }}
+                      className={`p-3.5 rounded-xl border text-left transition relative ${
+                        functionType === fam
+                          ? 'bg-indigo-50/70 border-indigo-600 ring-2 ring-indigo-500/20 text-indigo-900'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {meta.badge && (
+                        <span className="absolute top-2.5 right-2.5 text-[11px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
+                          {meta.badge}
+                        </span>
+                      )}
+                      <span className="font-bold text-sm block">{meta.label}</span>
+                      <span className="text-xs text-slate-500">{meta.desc}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -655,7 +679,7 @@ ${solution.verificationSteps.composition1}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                       <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Coefficient a (x²)</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefA} (x²)</label>
                         <input
                           type="number"
                           step="1"
@@ -665,7 +689,7 @@ ${solution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Coefficient b (x)</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefB} (x)</label>
                         <input
                           type="number"
                           step="1"
@@ -675,7 +699,7 @@ ${solution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Constant c</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefC}</label>
                         <input
                           type="number"
                           step="1"
@@ -707,7 +731,7 @@ ${solution.verificationSteps.composition1}
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Numerator a</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.numerator} a</label>
                         <input
                           type="number"
                           value={ratA}
@@ -716,7 +740,7 @@ ${solution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Numerator b</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.numerator} b</label>
                         <input
                           type="number"
                           value={ratB}
@@ -725,7 +749,7 @@ ${solution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Denominator c</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.denominator} c</label>
                         <input
                           type="number"
                           value={ratC}
@@ -734,7 +758,7 @@ ${solution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Denominator d</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.denominator} d</label>
                         <input
                           type="number"
                           value={ratD}
@@ -750,7 +774,7 @@ ${solution.verificationSteps.composition1}
                 {functionType === 'linear' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Slope m</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefM}</label>
                       <input
                         type="number"
                         value={linM}
@@ -759,7 +783,7 @@ ${solution.verificationSteps.composition1}
                       />
                     </div>
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Y-Intercept b</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefC}</label>
                       <input
                         type="number"
                         value={linB}
@@ -774,7 +798,7 @@ ${solution.verificationSteps.composition1}
                 {functionType === 'radical' && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Multiplier a</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefA}</label>
                       <input
                         type="number"
                         value={radA}
@@ -783,7 +807,7 @@ ${solution.verificationSteps.composition1}
                       />
                     </div>
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Inside b</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefB}</label>
                       <input
                         type="number"
                         value={radB}
@@ -792,7 +816,7 @@ ${solution.verificationSteps.composition1}
                       />
                     </div>
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Inside c</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefC}</label>
                       <input
                         type="number"
                         value={radC}
@@ -801,7 +825,7 @@ ${solution.verificationSteps.composition1}
                       />
                     </div>
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Vertical Shift d</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefD}</label>
                       <input
                         type="number"
                         value={radD}
@@ -816,7 +840,7 @@ ${solution.verificationSteps.composition1}
                 {functionType === 'exponential' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Multiplier a (a · eˣ)</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefA} (a · eˣ)</label>
                       <input
                         type="number"
                         value={expA}
@@ -825,7 +849,7 @@ ${solution.verificationSteps.composition1}
                       />
                     </div>
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Vertical Shift d</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefD}</label>
                       <input
                         type="number"
                         value={expD}
@@ -840,7 +864,7 @@ ${solution.verificationSteps.composition1}
                 {functionType === 'cubic' && (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Coefficient a</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefA}</label>
                       <input
                         type="number"
                         value={cubA}
@@ -849,7 +873,7 @@ ${solution.verificationSteps.composition1}
                       />
                     </div>
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Horizontal Shift h</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.shiftH}</label>
                       <input
                         type="number"
                         value={cubH}
@@ -858,7 +882,7 @@ ${solution.verificationSteps.composition1}
                       />
                     </div>
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Vertical Shift k</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.shiftK}</label>
                       <input
                         type="number"
                         value={cubK}
@@ -967,7 +991,7 @@ ${solution.verificationSteps.composition1}
 
               {/* Right 6 Columns: Interactive Graph */}
               <div className="lg:col-span-6 print:hidden">
-                <GraphCanvas solution={solution} />
+                <GraphCanvas solution={solution} t={t.graph} />
               </div>
             </div>
 
@@ -1021,10 +1045,10 @@ ${solution.verificationSteps.composition1}
               </div>
 
               <span className="text-sm text-slate-500 font-medium">
-                {solverSubView === 'steps' && `${solution.steps.length} Steps Generated`}
-                {solverSubView === 'table' && 'Coordinate Reflection Verification'}
-                {solverSubView === 'evaluator' && 'Real-time Point Substitution'}
-                {solverSubView === 'calculus' && 'Horizontal Line Test Proof'}
+                {solverSubView === 'steps' && `${solution.steps.length} ${t.subviewStatuses.steps}`}
+                {solverSubView === 'table' && t.subviewStatuses.table}
+                {solverSubView === 'evaluator' && t.subviewStatuses.evaluator}
+                {solverSubView === 'calculus' && t.subviewStatuses.calculus}
               </span>
             </div>
 
@@ -1101,13 +1125,13 @@ ${solution.verificationSteps.composition1}
             )}
 
             {/* SUB-VIEW 2: TABLE OF VALUES */}
-            {solverSubView === 'table' && <ValuesTable solution={solution} />}
+            {solverSubView === 'table' && <ValuesTable solution={solution} t={t.table} />}
 
             {/* SUB-VIEW 3: POINT EVALUATOR */}
-            {solverSubView === 'evaluator' && <ValueEvaluator solution={solution} />}
+            {solverSubView === 'evaluator' && <ValueEvaluator solution={solution} t={t.evaluator} />}
 
             {/* SUB-VIEW 4: MONOTONICITY & DERIVATIVE */}
-            {solverSubView === 'calculus' && <DerivativeAnalysis solution={solution} />}
+            {solverSubView === 'calculus' && <DerivativeAnalysis solution={solution} t={t.calculus} />}
 
             {/* Worked Examples Carousel */}
             <div className="print:hidden">

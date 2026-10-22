@@ -2,19 +2,121 @@ import React, { useState } from 'react';
 import { CompletingTheSquareDetail } from '../types/math';
 import { MathView } from './MathView';
 import { CheckCircle2, AlertTriangle, ArrowRight, Lightbulb, Split, Layers } from 'lucide-react';
+import { SupportedLocale } from '../i18n/translations';
 
 interface CompletingTheSquareExplainerProps {
   detail: CompletingTheSquareDetail;
+  locale?: SupportedLocale;
 }
+
+const LABELS: Record<SupportedLocale, {
+  badge: string;
+  subtitle: string;
+  title: string;
+  whyQuestion: string;
+  stepBtn: string;
+  prev: string;
+  next: string;
+  stepOf: string;
+  geoTitle: string;
+  geoDesc: string;
+  origArea: string;
+  missingCorner: string;
+  compSquare: string;
+  vertexCoord: string;
+}> = {
+  en: {
+    badge: 'Deep-Dive Algebra Breakdown',
+    subtitle: 'Core Pain Point in High School Functions',
+    title: 'Completing the Square: Step-by-Step Anatomy',
+    whyQuestion: 'Why do we complete the square? Because y appears twice (as y² and y). We must condense it into a single binomial (y - h)² before taking the square root!',
+    stepBtn: 'Step',
+    prev: 'Previous Step',
+    next: 'Next Step',
+    stepOf: 'of',
+    geoTitle: 'Geometric "Area" Model',
+    geoDesc: '"Completing the square" was originally invented by ancient geometers as literally adding the missing corner piece to a square of side y:',
+    origArea: 'Original area:',
+    missingCorner: 'Missing corner added:',
+    compSquare: 'Completed square:',
+    vertexCoord: 'Vertex Coordinates:',
+  },
+  zh: {
+    badge: '核心代数深度剖析',
+    subtitle: '高一函数章节最核心痛点',
+    title: '配方法拆解全过程详解',
+    whyQuestion: '为什么要用配方法？因为式子中同时出现了 y² 与 y 两项，无法直接移项求解。必须通过配方法将其折叠为一个完全平方式 (y - h)²，才能两边开平方！',
+    stepBtn: '步骤',
+    prev: '上一步',
+    next: '下一步',
+    stepOf: '/',
+    geoTitle: '几何面积“补角”模型',
+    geoDesc: '“配方法”在古代几何学中，本质就是给一个边长为 y 的正方形补齐右下角缺失的面积块：',
+    origArea: '原多项式面积:',
+    missingCorner: '补齐的缺失方块:',
+    compSquare: '完整大正方形面积:',
+    vertexCoord: '抛物线顶点坐标:',
+  },
+  es: {
+    badge: 'Desglose Algebraico en Profundidad',
+    subtitle: 'Punto crítico en funciones de secundaria y bachillerato',
+    title: 'Completar el Cuadrado: Anatomía Paso a Paso',
+    whyQuestion: '¿Por qué completamos el cuadrado? Porque y aparece dos veces (como y² e y). ¡Debemos condensarlo en un solo binomio (y - h)² antes de sacar la raíz cuadrada!',
+    stepBtn: 'Paso',
+    prev: 'Paso Anterior',
+    next: 'Paso Siguiente',
+    stepOf: 'de',
+    geoTitle: 'Modelo Geométrico de Áreas',
+    geoDesc: '"Completar el cuadrado" fue inventado originalmente por geómetras añadiendo literalmente la esquina que faltaba a un cuadrado de lado y:',
+    origArea: 'Área original:',
+    missingCorner: 'Esquina agregada:',
+    compSquare: 'Cuadrado completado:',
+    vertexCoord: 'Coordenadas del vértice:',
+  },
+  fr: {
+    badge: 'Analyse Algébrique Approfondie',
+    subtitle: 'Point clé du programme de lycée',
+    title: 'Complétion du Carré: Anatomie Étape par Étape',
+    whyQuestion: 'Pourquoi compléter le carré ? Parce que y apparaît deux fois (en y² et y). Nous devons le condenser en un binôme (y - h)² avant de prendre la racine carrée !',
+    stepBtn: 'Étape',
+    prev: 'Étape Précédente',
+    next: 'Étape Suivante',
+    stepOf: 'sur',
+    geoTitle: 'Modèle Géométrique d\'Aires',
+    geoDesc: 'La complétion du carré a été inventée pour ajouter le coin manquant à un carré de côté y :',
+    origArea: 'Aire initiale :',
+    missingCorner: 'Coin manquant ajouté :',
+    compSquare: 'Carré complété :',
+    vertexCoord: 'Coordonnées du sommet :',
+  },
+  pt: {
+    badge: 'Aprofundamento Algébrico Passo a Passo',
+    subtitle: 'Conceito crucial no Ensino Médio e Pré-Cálculo',
+    title: 'Completar Quadrados: Anatomia Detalhada',
+    whyQuestion: 'Por que completamos o quadrado? Porque y aparece duas vezes (como y² e y). Precisamos condensá-lo em um único binômio (y - h)² antes de extrair a raiz quadrada!',
+    stepBtn: 'Passo',
+    prev: 'Passo Anterior',
+    next: 'Próximo Passo',
+    stepOf: 'de',
+    geoTitle: 'Modelo Geométrico de Áreas',
+    geoDesc: '"Completar o quadrado" foi criado por geômetras antigos ao adicionar o canto que faltava a um quadrado de lado y:',
+    origArea: 'Área original:',
+    missingCorner: 'Canto que faltava adicionado:',
+    compSquare: 'Quadrado completado:',
+    vertexCoord: 'Coordenadas do vértice:',
+  },
+};
 
 export const CompletingTheSquareExplainer: React.FC<CompletingTheSquareExplainerProps> = ({
   detail,
+  locale = 'en',
 }) => {
   const [activeStep, setActiveStep] = useState<number>(1);
   const [selectedBranch, setSelectedBranch] = useState<'+' | '-'>(detail.chosenBranch);
 
   const bOver2a = detail.b / (2 * detail.a);
   const squarePiece = bOver2a * bOver2a;
+  const l = LABELS[locale] || LABELS.en;
 
   return (
     <div className="bg-white border border-indigo-100 rounded-2xl p-6 shadow-sm">
@@ -23,21 +125,20 @@ export const CompletingTheSquareExplainer: React.FC<CompletingTheSquareExplainer
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-              Deep-Dive Algebra Breakdown
+              {l.badge}
             </span>
-            <span className="text-xs text-slate-500 font-medium">Core Pain Point in High School Functions</span>
+            <span className="text-xs text-slate-500 font-medium">{l.subtitle}</span>
           </div>
-          <h3 className="text-lg font-bold text-slate-900 mt-1">
-            Completing the Square: Step-by-Step Anatomy
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-1">
+            {l.title}
           </h3>
-          <p className="text-sm text-slate-600">
-            Why do we complete the square? Because <span className="font-semibold text-slate-800">y</span> appears twice (as <code className="text-indigo-600 bg-indigo-50 px-1 rounded">y²</code> and <code className="text-indigo-600 bg-indigo-50 px-1 rounded">y</code>). 
-            We must condense it into a single binomial <code className="text-indigo-600 bg-indigo-50 px-1 rounded">(y - h)²</code> before taking the square root!
+          <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+            {l.whyQuestion}
           </p>
         </div>
 
         {/* Step Navigation Pill */}
-        <div className="flex items-center bg-slate-100 p-1 rounded-xl self-start md:self-center">
+        <div className="flex items-center bg-slate-100 p-1 rounded-xl self-start md:self-center shrink-0">
           {[1, 2, 3, 4, 5].map((s) => (
             <button
               key={s}
@@ -48,7 +149,7 @@ export const CompletingTheSquareExplainer: React.FC<CompletingTheSquareExplainer
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Step {s}
+              {l.stepBtn} {s}
             </button>
           ))}
         </div>
