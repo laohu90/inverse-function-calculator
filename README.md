@@ -2,6 +2,8 @@
 
 > A modern, responsive, multilingual step-by-step Inverse Function Calculator with dedicated completing-the-square breakdowns, reflection graphing across $y = x$, and domain/range verification. Tailored for High School Algebra 2, Precalculus, and AP Precalculus students worldwide.
 
+> 🌐 **Live Website**: [https://inverse-function-calculator.formulacalckit.com](https://inverse-function-calculator.formulacalckit.com)
+
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
 ![React](https://img.shields.io/badge/React-19-61dafb.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6.svg)

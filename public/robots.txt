@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ais-dev-463ttmaoufps5ssen6gyia-139988090333.asia-east1.run.app/sitemap.xml
+Sitemap: https://inverse-function-calculator.formulacalckit.com/sitemap.xml
