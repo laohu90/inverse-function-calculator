@@ -507,9 +507,9 @@ ${solution.verificationSteps.composition1}
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 w-full space-y-8">
         {/* Universal Text Formula Bar */}
-        <div className="mb-6 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs print:hidden">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs print:hidden">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="flex-1 relative">
               <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 font-mono font-bold text-base">
@@ -520,7 +520,7 @@ ${solution.verificationSteps.composition1}
                 value={typedFormula}
                 onChange={(e) => handleParseFormula(e.target.value)}
                 placeholder={t.input.placeholder}
-                className="w-full pl-18 pr-4 py-3 bg-slate-50 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-base font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition shadow-inner"
+                className="w-full pl-18 pr-4 py-3.5 bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 rounded-xl text-base font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition shadow-inner"
               />
             </div>
             
@@ -537,7 +537,7 @@ ${solution.verificationSteps.composition1}
                 <button
                   key={sym.label}
                   onClick={() => handleParseFormula(typedFormula + sym.val)}
-                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-mono font-bold rounded-lg border border-slate-200 transition shrink-0"
+                  className="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-mono font-bold rounded-xl border border-slate-200 transition shrink-0 shadow-2xs"
                 >
                   {sym.label}
                 </button>
@@ -546,23 +546,23 @@ ${solution.verificationSteps.composition1}
           </div>
 
           {parseNotice && (
-            <div className="mt-2 text-sm text-indigo-700 flex items-center gap-1.5 font-medium">
-              <Check className="w-4 h-4 text-indigo-600" />
+            <div className="mt-3 text-sm text-indigo-700 flex items-center gap-1.5 font-medium bg-indigo-50/60 p-2.5 rounded-xl border border-indigo-100">
+              <Check className="w-4 h-4 text-indigo-600 shrink-0" />
               <span>{parseNotice}</span>
             </div>
           )}
 
           {/* Recent History Quick Jump */}
           {recentFormulas && recentFormulas.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs text-slate-500">
-              <span className="font-semibold flex items-center gap-1 shrink-0 text-slate-600">
+            <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs text-slate-500">
+              <span className="font-semibold flex items-center gap-1.5 shrink-0 text-slate-700">
                 <History className="w-3.5 h-3.5 text-indigo-600" /> {t.recent}
               </span>
               {recentFormulas.map((f, i) => (
                 <button
                   key={i}
                   onClick={() => handleParseFormula(f)}
-                  className="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg text-slate-700 font-mono transition shrink-0 border border-slate-200 text-xs"
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg text-slate-700 font-mono transition shrink-0 border border-slate-200 text-xs"
                 >
                   {f}
                 </button>
@@ -580,8 +580,8 @@ ${solution.verificationSteps.composition1}
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   {t.input.selectFamily}
                 </span>
-                <span className="text-sm text-slate-500 hidden sm:inline">
-                  Algebra 2 / Precalculus / AP Precalculus
+                <span className="text-xs text-slate-400 hidden sm:inline">
+                  Algebra 2 & Precalculus
                 </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -599,19 +599,21 @@ ${solution.verificationSteps.composition1}
                         if (fam === 'exponential') setTypedFormula('e^x - 2');
                         if (fam === 'cubic') setTypedFormula('(x - 2)^3 - 1');
                       }}
-                      className={`p-3.5 rounded-xl border text-left transition relative ${
+                      className={`p-3.5 rounded-2xl border text-left transition relative flex flex-col justify-between ${
                         functionType === fam
-                          ? 'bg-indigo-50/70 border-indigo-600 ring-2 ring-indigo-500/20 text-indigo-900'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                          ? 'bg-indigo-50/80 border-indigo-600 ring-2 ring-indigo-500/20 text-indigo-950 shadow-xs'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-2xs'
                       }`}
                     >
                       {meta.badge && (
-                        <span className="absolute top-2.5 right-2.5 text-[11px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
+                        <span className="absolute top-2.5 right-2.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-100 text-indigo-700">
                           {meta.badge}
                         </span>
                       )}
-                      <span className="font-bold text-sm block">{meta.label}</span>
-                      <span className="text-xs text-slate-500">{meta.desc}</span>
+                      <div>
+                        <span className="font-bold text-sm block mb-0.5">{meta.label}</span>
+                        <span className="text-xs text-slate-500 leading-snug block">{meta.desc}</span>
+                      </div>
                     </button>
                   );
                 })}
