@@ -30,7 +30,6 @@ import { MathView } from './components/MathView';
 import { GraphCanvas } from './components/GraphCanvas';
 import { CompletingTheSquareExplainer } from './components/CompletingTheSquareExplainer';
 import { PracticeMode } from './components/PracticeMode';
-import { AITutorModal } from './components/AITutorModal';
 import { SEOContentHub } from './components/SEOContentHub';
 import { ValuesTable } from './components/ValuesTable';
 import { ValueEvaluator } from './components/ValueEvaluator';
@@ -96,7 +95,6 @@ export default function App() {
 
   // Modal states
   const [isEmbedOpen, setIsEmbedOpen] = useState<boolean>(false);
-  const [isAITutorOpen, setIsAITutorOpen] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [copiedSteps, setCopiedSteps] = useState<boolean>(false);
 
@@ -319,6 +317,18 @@ ${solution.verificationSteps.composition1}
     setTimeout(() => setCopiedSteps(false), 2000);
   };
 
+  const handleResetToDefault = () => {
+    setFunctionType('quadratic');
+    setQuadA(1);
+    setQuadB(4);
+    setQuadC(1);
+    setQuadBranch('+');
+    setTypedFormula('x^2 + 4x + 1');
+    setParseNotice(null);
+    setSolverSubView('steps');
+    setActiveTab('solver');
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -353,12 +363,12 @@ ${solution.verificationSteps.composition1}
             <LanguageSelector currentLocale={locale} onSelectLocale={setLocale} />
 
             <button
-              onClick={() => setIsAITutorOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-sm font-semibold hover:opacity-95 transition shadow-xs flex items-center gap-1.5"
+              onClick={handleResetToDefault}
+              title={t.resetBtn}
+              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition border border-slate-200 flex items-center gap-1.5"
             >
-              <Sparkles className="w-4 h-4" />
-              <span className="hidden sm:inline">{t.aiTutorBtn}</span>
-              <span className="sm:hidden">AI</span>
+              <RotateCcw className="w-4 h-4 text-slate-500" />
+              <span className="hidden sm:inline">{t.resetBtn}</span>
             </button>
             <button
               onClick={handlePrint}
@@ -879,10 +889,13 @@ ${solution.verificationSteps.composition1}
                         <span>{copiedSteps ? t.copiedNotice : t.result.copyBtn}</span>
                       </button>
                       <button
-                        onClick={() => setIsAITutorOpen(true)}
-                        className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1"
+                        onClick={() => {
+                          setSolverSubView('steps');
+                          document.getElementById('derivation-steps-section')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition"
                       >
-                        <Sparkles className="w-3.5 h-3.5" /> {t.result.explainBtn}
+                        <ArrowRight className="w-3.5 h-3.5" /> {t.result.explainBtn}
                       </button>
                     </div>
                   </div>
@@ -1017,7 +1030,7 @@ ${solution.verificationSteps.composition1}
 
             {/* SUB-VIEW 1: 4-STEP MASTER BREAKDOWN */}
             {solverSubView === 'steps' && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+              <div id="derivation-steps-section" className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
                 <div className="border-b border-slate-100 pb-4">
                   <h3 className="text-lg sm:text-xl font-bold text-slate-900">
                     {t.stepsTitle}
@@ -1199,13 +1212,6 @@ ${solution.verificationSteps.composition1}
           </div>
         </div>
       </footer>
-
-      {/* AI Tutor Modal */}
-      <AITutorModal
-        isOpen={isAITutorOpen}
-        onClose={() => setIsAITutorOpen(false)}
-        solution={solution}
-      />
 
       {/* Embed Generator Modal */}
       <EmbedModal

@@ -8,7 +8,7 @@ export interface TranslationDictionary {
   appTitle: string;
   appSubtitle: string;
   tagline: string;
-  aiTutorBtn: string;
+  resetBtn: string;
   printBtn: string;
   shareBtn: string;
   copiedNotice: string;
@@ -92,7 +92,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
     appTitle: 'Inverse Function Calculator',
     appSubtitle: 'Step-by-Step Solver & Completing the Square',
     tagline: 'Interchange x & y • Solve for y • Domain & Range • Reflection y = x',
-    aiTutorBtn: 'Ask AI Tutor',
+    resetBtn: 'Reset',
     printBtn: 'Print Worksheet',
     shareBtn: 'Share',
     copiedNotice: 'Copied!',
@@ -128,7 +128,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       range: 'Range:',
       warningTitle: 'CRITICAL WARNING FOR EXAMS:',
       warningDesc: 'The superscript -1 is an inverse function operator, NOT an algebraic exponent.',
-      explainBtn: 'Explain',
+      explainBtn: 'View Steps',
       copyBtn: 'Copy',
       deepDiveBtn: 'Deep Dive',
       deepDivePrompt: 'Inspect the dedicated geometric area model and (b/2a)² derivation.',
@@ -175,7 +175,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
     appTitle: 'Calculadora de Función Inversa',
     appSubtitle: 'Resolución Paso a Paso y Completar el Cuadrado',
     tagline: 'Intercambiar x e y • Despejar y • Dominio y Rango • Reflejo en y = x',
-    aiTutorBtn: 'Tutor IA',
+    resetBtn: 'Restablecer',
     printBtn: 'Imprimir Hoja',
     shareBtn: 'Compartir',
     copiedNotice: '¡Copiado!',
@@ -211,7 +211,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       range: 'Rango:',
       warningTitle: '¡ADVERTENCIA CRUCIAL PARA EXÁMENES!',
       warningDesc: 'El superíndice -1 indica la función inversa, NO un exponente algebraico recíproco.',
-      explainBtn: 'Explicar',
+      explainBtn: 'Ver Pasos',
       copyBtn: 'Copiar',
       deepDiveBtn: 'Profundizar',
       deepDivePrompt: 'Revisa el modelo geométrico de áreas y la derivación de (b/2a)²',
@@ -258,7 +258,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
     appTitle: 'Calculateur de Fonction Inverse',
     appSubtitle: 'Résolution Étape par Étape & Complétion du Carré',
     tagline: 'Échanger x et y • Isoler y • Domaine et Image • Symétrie par rapport à y = x',
-    aiTutorBtn: 'Tuteur IA',
+    resetBtn: 'Réinitialiser',
     printBtn: 'Imprimer',
     shareBtn: 'Partager',
     copiedNotice: 'Copié !',
@@ -294,7 +294,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       range: 'Ensemble Image:',
       warningTitle: 'AVERTISSEMENT EXAMEN IMPORTANT:',
       warningDesc: 'L\'exposant -1 désigne la réciproque, PAS l\'inverse multiplicatif 1/f(x).',
-      explainBtn: 'Expliquer',
+      explainBtn: 'Voir Étapes',
       copyBtn: 'Copier',
       deepDiveBtn: 'Détails',
       deepDivePrompt: 'Inspectez le modèle d\'aire géométrique et la formule (b/2a)²',
@@ -341,7 +341,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
     appTitle: 'Calculadora de Função Inversa',
     appSubtitle: 'Passo a Passo e Método de Completar Quadrados',
     tagline: 'Trocar x por y • Isolar y • Domínio e Imagem • Reflexão em y = x',
-    aiTutorBtn: 'Tutor IA',
+    resetBtn: 'Redefinir',
     printBtn: 'Imprimir Folha',
     shareBtn: 'Compartilhar',
     copiedNotice: 'Copiado!',
@@ -377,7 +377,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       range: 'Imagem:',
       warningTitle: 'AVISO IMPORTANTE PARA PROVAS:',
       warningDesc: 'O expoente -1 representa a função inversa, e NÃO o recíproco 1/f(x).',
-      explainBtn: 'Explicar',
+      explainBtn: 'Ver Passos',
       copyBtn: 'Copiar',
       deepDiveBtn: 'Aprofundar',
       deepDivePrompt: 'Inspecione o modelo geométrico de áreas e a fórmula (b/2a)²',
@@ -424,7 +424,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
     appTitle: '反函数求解计算器',
     appSubtitle: '详细解题步骤与配方法拆解',
     tagline: '互换 x 与 y • 解方程求 y • 定义域与值域映射 • 关于 y = x 轴对称镜像',
-    aiTutorBtn: 'AI 数学助教',
+    resetBtn: '重置默认',
     printBtn: '打印解题卷',
     shareBtn: '分享',
     copiedNotice: '已复制！',
@@ -460,7 +460,7 @@ export const TRANSLATIONS: Record<SupportedLocale, TranslationDictionary> = {
       range: '值域:',
       warningTitle: '高中考试核心易错警示:',
       warningDesc: '符号 -1 代表反函数运算，绝对不能等同于倒数 1/f(x)！',
-      explainBtn: 'AI 讲解',
+      explainBtn: '查看步骤',
       copyBtn: '复制',
       deepDiveBtn: '配方法深度剖析',
       deepDivePrompt: '查看配方法几何面积填补模型与 (b/2a)² 推导过程。',
