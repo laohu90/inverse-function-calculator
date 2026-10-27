@@ -60,7 +60,7 @@ import { parseMathExpression } from './utils/expressionParser';
 import { FunctionType, InverseSolution } from './types/math';
 
 export default function App() {
-  // Locale State: Defaults to English
+  // Locale State: Defaults to English unless language parameter or saved locale exists
   const [locale, setLocaleState] = useState<SupportedLocale>(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -167,9 +167,9 @@ export default function App() {
   const [recentFormulas, setRecentFormulas] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('inv_recent_formulas');
-      return saved ? JSON.parse(saved) : ['x^2 + 4x + 1', 'x^3 + 1', '(2x+3)/(x-5)', '3x - 7', 'e^x', '√(x-1)'];
+      return saved ? JSON.parse(saved) : ['x^2 + 4x + 1', 'x^4', 'x^3 + 1', '(2x+3)/(x-5)', '3x - 7', 'e^x', '√(x-1)'];
     } catch {
-      return ['x^2 + 4x + 1', 'x^3 + 1', '(2x+3)/(x-5)', '3x - 7', 'e^x', '√(x-1)'];
+      return ['x^2 + 4x + 1', 'x^4', 'x^3 + 1', '(2x+3)/(x-5)', '3x - 7', 'e^x', '√(x-1)'];
     }
   });
 
@@ -245,7 +245,7 @@ export default function App() {
       setParseError(null);
       setFunctionType(parseRes.type);
       setCustomSolution(parseRes.solution);
-      setParseNotice(`Recognized ${parseRes.type}: ${parseRes.solution.originalEquation}`);
+      setParseNotice(`${t.result.title}: ${parseRes.solution.originalEquation}`);
       setTimeout(() => setParseNotice(null), 3500);
 
       // Persist to recent formulas history
@@ -265,7 +265,7 @@ export default function App() {
     } else {
       // REQUIREMENT 1: Explicitly report error, forbid downgrading to linear identity!
       setParseNotice(null);
-      setParseError(`${parseRes.error} ${parseRes.suggestion || 'Use the Function Family buttons below to select the function type and enter parameters.'}`);
+      setParseError(`${parseRes.error} ${parseRes.suggestion || 'Please use the Function Family buttons below to select the function type and enter parameters.'}`);
     }
   };
 
@@ -286,6 +286,9 @@ export default function App() {
       setQuadC(11);
       setQuadBranch('+');
       handleParseFormula('2x^2 - 12x + 11');
+    } else if (presetName === 'poly4') {
+      setFunctionType('polynomial');
+      handleParseFormula('x^4');
     } else if (presetName === 'rat1') {
       setFunctionType('rational');
       setRatA(2);
@@ -346,7 +349,7 @@ export default function App() {
     } else if (fam === 'exponential') {
       handleParseFormula('e^x');
     } else if (fam === 'cubic' || fam === 'polynomial') {
-      handleParseFormula('x^3 + 1');
+      handleParseFormula('x^4');
     } else if (fam === 'logarithmic') {
       handleParseFormula('ln(x)');
     } else if (fam === 'trigonometric') {
@@ -362,13 +365,26 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const copyShareLink = () => {
+  const copyShareLink = async () => {
     const shareUrl = typeof window !== 'undefined'
       ? `${window.location.origin}${window.location.pathname}?f=${encodeURIComponent(typedFormula)}`
       : '';
-    navigator.clipboard.writeText(shareUrl);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+      }
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        navigator.share({
+          title: t.appTitle,
+          text: `${currentSolution.originalEquation} ⟶ ${currentSolution.inverseEquation}`,
+          url: shareUrl,
+        }).catch(() => {});
+      }
+    } catch {
+      // ignore
+    }
   };
 
   const copyFullSolution = () => {
@@ -424,11 +440,11 @@ ${currentSolution.verificationSteps.composition1}
                   {t.appTitle}
                 </h1>
                 <span className="hidden md:inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  By laohu90
+                  {t.nav.authorLabel} laohu90
                 </span>
               </div>
               <p className="text-xs text-slate-500 hidden sm:block">
-                Rigorous algebraic solver with Horizontal Line Test & domain restriction
+                {t.tagline}
               </p>
             </div>
           </div>
@@ -438,24 +454,34 @@ ${currentSolution.verificationSteps.composition1}
             {/* Regression Test Runner Button */}
             <button
               onClick={() => setIsRegressionOpen(true)}
-              title="Run 10 Regression Tests"
-              className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition flex items-center gap-1.5"
+              title={t.nav.regressionBtn}
+              className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
             >
               <FlaskConical className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="hidden sm:inline">10 Regression Tests</span>
+              <span className="hidden sm:inline">{t.nav.regressionBtn}</span>
             </button>
 
             {/* Language Selector */}
             <LanguageSelector currentLocale={locale} onSelectLocale={handleSelectLocale} />
 
-            {/* Export & Share */}
+            {/* Prominent Share Button in Top Bar */}
+            <button
+              onClick={copyShareLink}
+              title={t.shareBtn}
+              className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs"
+            >
+              <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+              <span className="hidden sm:inline">{copiedLink ? t.copiedNotice : t.shareBtn}</span>
+            </button>
+
+            {/* Export */}
             <button
               onClick={() => setIsExportOpen(true)}
-              title="Export solution"
+              title={t.result.exportBtn}
               className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition flex items-center gap-1 shadow-xs"
             >
               <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Export</span>
+              <span className="hidden sm:inline">{t.result.exportBtn}</span>
             </button>
 
             {/* About & Contact */}
@@ -464,11 +490,11 @@ ${currentSolution.verificationSteps.composition1}
                 setAboutSubTab('about');
                 setIsAboutOpen(true);
               }}
-              title="About & Author"
+              title={t.nav.aboutBtn}
               className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition text-sm flex items-center gap-1"
             >
               <Info className="w-4 h-4" />
-              <span className="hidden lg:inline">About</span>
+              <span className="hidden lg:inline">{t.nav.aboutBtn}</span>
             </button>
 
             <button
@@ -564,7 +590,7 @@ ${currentSolution.verificationSteps.composition1}
                 type="text"
                 value={typedFormula}
                 onChange={(e) => handleParseFormula(e.target.value)}
-                placeholder="e.g. 3x-7, x^2+4x+1, (2x+3)/(x-5), e^x, sqrt(x-1), x^3, x^3+1, ln(x), 1/(x+2), 2^x"
+                placeholder={t.input.placeholder}
                 className={`w-full pl-18 pr-4 py-3.5 bg-slate-50/70 hover:bg-white focus:bg-white border rounded-xl text-base font-mono text-slate-900 focus:outline-none focus:ring-2 transition shadow-inner ${
                   parseError
                     ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20 bg-rose-50/30'
@@ -576,6 +602,7 @@ ${currentSolution.verificationSteps.composition1}
             {/* Quick Math Pad Symbols */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
               {[
+                { label: 'x⁴', val: 'x^4' },
                 { label: 'x³+1', val: 'x^3 + 1' },
                 { label: 'x²', val: 'x^2' },
                 { label: '√x', val: 'sqrt(x)' },
@@ -601,20 +628,20 @@ ${currentSolution.verificationSteps.composition1}
               <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <span className="font-bold block text-rose-800">
-                  Formula Parse Error (No Silent Fallback):
+                  {t.input.placeholder.split(':')[0] || 'Formula Parse Notice'}:
                 </span>
                 <p className="text-xs text-rose-700 leading-relaxed">
                   {parseError}
                 </p>
                 <div className="pt-1 flex items-center gap-2">
-                  <span className="text-xs text-rose-600 font-medium">Quick switch:</span>
+                  <span className="text-xs text-rose-600 font-medium">{t.input.selectFamily}</span>
                   {(['linear', 'quadratic', 'rational', 'radical', 'exponential', 'cubic', 'logarithmic'] as FunctionType[]).map((fam) => (
                     <button
                       key={fam}
                       onClick={() => handleSelectFamilyCard(fam)}
                       className="px-2 py-0.5 rounded bg-white hover:bg-rose-100 border border-rose-200 text-rose-800 text-[11px] font-semibold capitalize transition"
                     >
-                      {fam}
+                      {t.functionFamilies[fam]?.label?.split(' ')[0] || fam}
                     </button>
                   ))}
                 </div>
@@ -634,7 +661,7 @@ ${currentSolution.verificationSteps.composition1}
           {recentFormulas && recentFormulas.length > 0 && (
             <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs text-slate-500">
               <span className="font-semibold flex items-center gap-1.5 shrink-0 text-slate-700">
-                <RotateCcw className="w-3.5 h-3.5 text-indigo-600" /> Recent:
+                <RotateCcw className="w-3.5 h-3.5 text-indigo-600" /> {t.recent}
               </span>
               {recentFormulas.map((f, i) => (
                 <button
@@ -656,41 +683,46 @@ ${currentSolution.verificationSteps.composition1}
             <div className="space-y-3 print:hidden">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Select Function Family
+                  {t.input.selectFamily}
                 </span>
                 <span className="text-xs text-slate-400 hidden sm:inline">
-                  Supports n-th polynomials, logs with base change, rationals, radicals, trig & piecewise
+                  {t.tagline}
                 </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
                 {[
-                  { fam: 'linear', label: 'Linear', desc: 'mx + b', badge: '1-to-1' },
-                  { fam: 'quadratic', label: 'Quadratic', desc: 'ax² + bx + c', badge: 'HLT Restr.' },
-                  { fam: 'cubic', label: 'Cubic / xⁿ', desc: 'x³, xⁿ', badge: 'Odd: 1-to-1' },
-                  { fam: 'rational', label: 'Rational', desc: '(ax+b)/(cx+d)', badge: 'Hyperbola' },
-                  { fam: 'radical', label: 'Radical', desc: '√(bx+c)', badge: 'x ≥ 0' },
-                  { fam: 'exponential', label: 'Exponential', desc: 'eˣ, 2ˣ, bˣ', badge: 'x > 0' },
-                  { fam: 'logarithmic', label: 'Logarithm', desc: 'ln(x), log_b(x)', badge: 'Change Base' },
-                  { fam: 'trigonometric', label: 'Trig', desc: 'sin, cos, tan', badge: 'Principal' },
-                ].map((item) => (
-                  <button
-                    key={item.fam}
-                    onClick={() => handleSelectFamilyCard(item.fam as FunctionType)}
-                    className={`p-3 rounded-xl border text-left transition relative flex flex-col justify-between ${
-                      functionType === item.fam
-                        ? 'bg-indigo-50/90 border-indigo-600 ring-2 ring-indigo-500/20 text-indigo-950 shadow-xs'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-2xs'
-                    }`}
-                  >
-                    <div>
-                      <span className="font-bold text-xs block mb-0.5">{item.label}</span>
-                      <span className="text-[11px] text-slate-500 font-mono block">{item.desc}</span>
-                    </div>
-                    <span className="mt-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 inline-block w-fit">
-                      {item.badge}
-                    </span>
-                  </button>
-                ))}
+                  { fam: 'linear', key: 'linear' },
+                  { fam: 'quadratic', key: 'quadratic' },
+                  { fam: 'cubic', key: 'cubic' },
+                  { fam: 'rational', key: 'rational' },
+                  { fam: 'radical', key: 'radical' },
+                  { fam: 'exponential', key: 'exponential' },
+                  { fam: 'logarithmic', key: 'logarithmic' },
+                  { fam: 'trigonometric', key: 'trigonometric' },
+                ].map((item) => {
+                  const meta = t.functionFamilies[item.key] || { label: item.fam, desc: '', badge: '' };
+                  return (
+                    <button
+                      key={item.fam}
+                      onClick={() => handleSelectFamilyCard(item.fam as FunctionType)}
+                      className={`p-3 rounded-xl border text-left transition relative flex flex-col justify-between ${
+                        functionType === item.fam
+                          ? 'bg-indigo-50/90 border-indigo-600 ring-2 ring-indigo-500/20 text-indigo-950 shadow-xs'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-2xs'
+                      }`}
+                    >
+                      <div>
+                        <span className="font-bold text-xs block mb-0.5">{meta.label}</span>
+                        <span className="text-[11px] text-slate-500 font-mono block">{meta.desc}</span>
+                      </div>
+                      {meta.badge && (
+                        <span className="mt-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 inline-block w-fit">
+                          {meta.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -699,9 +731,9 @@ ${currentSolution.verificationSteps.composition1}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-200">
                 <div>
                   <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                    <span>Coefficients & Parameters</span>
+                    <span>{t.input.coefficientsTitle}</span>
                     <span className="text-xs font-normal text-slate-500">
-                      Fine-tune values or select quick presets
+                      {t.input.coefficientsSubtitle}
                     </span>
                   </h3>
                 </div>
@@ -709,9 +741,10 @@ ${currentSolution.verificationSteps.composition1}
                 {/* Quick Presets */}
                 <div className="flex items-center flex-wrap gap-1.5 text-xs">
                   <span className="font-semibold text-slate-600 flex items-center gap-1 mr-1">
-                    <Zap className="w-3.5 h-3.5 text-amber-500" /> Presets:
+                    <Zap className="w-3.5 h-3.5 text-amber-500" /> {t.input.presetsLabel}
                   </span>
                   <button onClick={() => applyPreset('quad1')} className="px-2 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-slate-800 font-mono transition">x²+4x+1</button>
+                  <button onClick={() => applyPreset('poly4')} className="px-2 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-slate-800 font-mono transition">x⁴</button>
                   <button onClick={() => applyPreset('cub1')} className="px-2 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-slate-800 font-mono transition">x³+1</button>
                   <button onClick={() => applyPreset('rat1')} className="px-2 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-slate-800 font-mono transition">(2x+3)/(x-5)</button>
                   <button onClick={() => applyPreset('lin1')} className="px-2 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-slate-800 font-mono transition">3x-7</button>
@@ -728,11 +761,11 @@ ${currentSolution.verificationSteps.composition1}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
                       <span>Standard Form: <MathView math="f(x) = ax^2 + bx + c" /></span>
-                      <span className="text-amber-700 font-medium">Domain restriction enforces Horizontal Line Test</span>
+                      <span className="text-amber-700 font-medium">{t.hltText.principalBranchTitle}</span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div className="bg-white p-3 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">a (x²)</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefA} (x²)</label>
                         <input
                           type="number"
                           step="1"
@@ -746,7 +779,7 @@ ${currentSolution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">b (x)</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefB} (x)</label>
                         <input
                           type="number"
                           step="1"
@@ -760,7 +793,7 @@ ${currentSolution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">c (const)</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefC}</label>
                         <input
                           type="number"
                           step="1"
@@ -774,7 +807,7 @@ ${currentSolution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">HLT Monotonic Branch</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.input.parabolaBranch}</label>
                         <select
                           value={quadBranch}
                           onChange={(e) => {
@@ -784,8 +817,8 @@ ${currentSolution.verificationSteps.composition1}
                           }}
                           className="w-full text-xs font-semibold px-2 py-2 border border-slate-300 rounded bg-white"
                         >
-                          <option value="+">Right Branch: x ≥ -b/(2a)</option>
-                          <option value="-">Left Branch: x ≤ -b/(2a)</option>
+                          <option value="+">{t.input.quadBranchRight}</option>
+                          <option value="-">{t.input.quadBranchLeft}</option>
                         </select>
                       </div>
                     </div>
@@ -800,7 +833,7 @@ ${currentSolution.verificationSteps.composition1}
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div className="bg-white p-3 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Numerator a</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.numerator} a</label>
                         <input
                           type="number"
                           value={ratA}
@@ -813,7 +846,7 @@ ${currentSolution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Numerator b</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.numerator} b</label>
                         <input
                           type="number"
                           value={ratB}
@@ -826,7 +859,7 @@ ${currentSolution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Denominator c</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.denominator} c</label>
                         <input
                           type="number"
                           value={ratC}
@@ -839,7 +872,7 @@ ${currentSolution.verificationSteps.composition1}
                         />
                       </div>
                       <div className="bg-white p-3 rounded-xl border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-600 block mb-1">Denominator d</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.denominator} d</label>
                         <input
                           type="number"
                           value={ratD}
@@ -859,7 +892,7 @@ ${currentSolution.verificationSteps.composition1}
                 {functionType === 'linear' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="bg-white p-3 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Slope (m)</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefM}</label>
                       <input
                         type="number"
                         value={linM}
@@ -872,7 +905,7 @@ ${currentSolution.verificationSteps.composition1}
                       />
                     </div>
                     <div className="bg-white p-3 rounded-xl border border-slate-200">
-                      <label className="text-xs font-semibold text-slate-600 block mb-1">Y-Intercept (b)</label>
+                      <label className="text-xs font-semibold text-slate-600 block mb-1">{t.coefficients.coefC}</label>
                       <input
                         type="number"
                         value={linB}
@@ -894,30 +927,45 @@ ${currentSolution.verificationSteps.composition1}
               {/* Left 6 Columns: Equation & Verification Cards */}
               <div className="lg:col-span-6 flex flex-col justify-between space-y-4">
                 <div className="bg-white border-2 border-indigo-600 rounded-2xl p-5 sm:p-6 shadow-sm relative overflow-hidden space-y-4">
-                  {/* Top Header of Card */}
-                  <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide bg-indigo-50 text-indigo-700">
-                      Inverse Function Result
+                  {/* Top Header of Card: Title & Share / Copy / Export Buttons */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide bg-indigo-50 text-indigo-700 w-fit">
+                      {t.result.title}
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
+                      {/* Prominent Direct Share Button */}
+                      <button
+                        onClick={copyShareLink}
+                        title={t.result.shareBtn}
+                        className="text-xs text-indigo-700 hover:text-indigo-900 font-semibold flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-200 transition shadow-2xs"
+                      >
+                        <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+                        <span>{copiedLink ? t.copiedNotice : t.result.shareBtn}</span>
+                      </button>
+
+                      {/* Copy Steps */}
                       <button
                         onClick={copyFullSolution}
-                        className="text-xs text-slate-600 hover:text-slate-900 font-medium flex items-center gap-1 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition"
+                        title={t.result.copyStepsBtn}
+                        className="text-xs text-slate-700 hover:text-slate-900 font-medium flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-200 transition"
                       >
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>{copiedSteps ? 'Copied Steps!' : 'Copy Steps'}</span>
+                        <Copy className="w-3.5 h-3.5 text-slate-500" />
+                        <span>{copiedSteps ? t.copiedNotice : t.result.copyStepsBtn}</span>
                       </button>
+
+                      {/* Export Modal */}
                       <button
                         onClick={() => setIsExportOpen(true)}
-                        className="text-xs text-indigo-700 hover:text-indigo-900 font-semibold flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition"
+                        title={t.result.exportBtn}
+                        className="text-xs text-slate-700 hover:text-slate-900 font-medium flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-200 transition"
                       >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Export</span>
+                        <Download className="w-3.5 h-3.5 text-slate-500" />
+                        <span>{t.result.exportBtn}</span>
                       </button>
                     </div>
                   </div>
 
-                  {/* REQUIREMENT 3: Horizontal Line Test (HLT) Verification Pill */}
+                  {/* Horizontal Line Test (HLT) Verification Pill */}
                   <div className={`p-3.5 rounded-xl border flex items-start gap-2.5 text-xs ${
                     currentSolution.horizontalLineTest.passed
                       ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
@@ -929,11 +977,15 @@ ${currentSolution.verificationSteps.composition1}
                       <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     )}
                     <div className="space-y-0.5">
-                      <span className="font-bold block">
-                        {currentSolution.horizontalLineTest.title}
+                      <span className="font-bold block text-sm">
+                        {currentSolution.horizontalLineTest.passed 
+                          ? t.hltText.passedTitle 
+                          : t.hltText.principalBranchTitle}
                       </span>
                       <p className="leading-relaxed text-slate-700">
-                        {currentSolution.horizontalLineTest.explanation}
+                        {currentSolution.horizontalLineTest.passed 
+                          ? t.hltText.passedDesc 
+                          : `${t.hltText.principalBranchDesc} (${t.result.domainOfF} ${currentSolution.domainOriginal})`}
                       </p>
                       {currentSolution.restrictionNote && (
                         <div className="pt-1 font-semibold text-indigo-800">
@@ -947,30 +999,30 @@ ${currentSolution.verificationSteps.composition1}
                   <div className="space-y-3.5">
                     {/* Original Function */}
                     <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                      <div className="text-xs font-semibold text-slate-500 mb-1">Original Function f(x)</div>
+                      <div className="text-xs font-semibold text-slate-500 mb-1">{t.result.originalFunction}</div>
                       <div className="text-lg sm:text-xl font-bold text-blue-700">
                         <MathView math={currentSolution.originalEquation} copyable />
                       </div>
                       <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-600 mt-2">
-                        <span><strong>Domain of f:</strong> <MathView math={currentSolution.domainOriginal} /></span>
-                        <span><strong>Range of f:</strong> <MathView math={currentSolution.rangeOriginal} /></span>
+                        <span><strong>{t.result.domainOfF}</strong> <MathView math={currentSolution.domainOriginal} /></span>
+                        <span><strong>{t.result.rangeOfF}</strong> <MathView math={currentSolution.rangeOriginal} /></span>
                       </div>
                     </div>
 
                     {/* Inverse Function with EXPLICIT DOMAIN RESTRICTION */}
                     <div className="p-4 bg-emerald-50/70 rounded-xl border border-emerald-300 ring-1 ring-emerald-500/20">
                       <div className="text-xs font-semibold text-emerald-800 mb-1 flex items-center justify-between">
-                        <span>Inverse Function f⁻¹(x)</span>
+                        <span>{t.result.inverseFunction}</span>
                         <span className="bg-emerald-200/60 text-emerald-900 text-xs px-2 py-0.5 rounded font-bold">
-                          Explicit Domain Enforced
+                          {t.result.explicitDomainBadge}
                         </span>
                       </div>
                       <div className="text-xl sm:text-2xl font-bold text-emerald-900">
                         <MathView math={currentSolution.inverseEquation} copyable />
                       </div>
                       <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-emerald-800 mt-2">
-                        <span><strong>Domain of f⁻¹:</strong> <MathView math={currentSolution.domainInverse} /></span>
-                        <span><strong>Range of f⁻¹:</strong> <MathView math={currentSolution.rangeInverse} /></span>
+                        <span><strong>{t.result.domainOfInv}</strong> <MathView math={currentSolution.domainInverse} /></span>
+                        <span><strong>{t.result.rangeOfInv}</strong> <MathView math={currentSolution.rangeInverse} /></span>
                       </div>
                     </div>
                   </div>
@@ -981,17 +1033,17 @@ ${currentSolution.verificationSteps.composition1}
                   <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl flex items-center justify-between print:hidden">
                     <div>
                       <span className="font-bold text-sm text-indigo-900 block">
-                        Completing the Square Breakdown
+                        {t.tabs.completingSquare}
                       </span>
                       <span className="text-xs text-slate-600">
-                        Deep dive into vertex form & binomial factoring
+                        {t.result.deepDivePrompt}
                       </span>
                     </div>
                     <button
                       onClick={() => setActiveTab('completing_square')}
                       className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition shrink-0"
                     >
-                      <span>Explore</span>
+                      <span>{t.result.deepDiveBtn}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1016,7 +1068,7 @@ ${currentSolution.verificationSteps.composition1}
                   }`}
                 >
                   <Calculator className="w-4 h-4" />
-                  <span>Derivation Steps</span>
+                  <span>{t.subviews.steps}</span>
                 </button>
                 <button
                   onClick={() => setSolverSubView('table')}
@@ -1027,7 +1079,7 @@ ${currentSolution.verificationSteps.composition1}
                   }`}
                 >
                   <Table className="w-4 h-4" />
-                  <span>Values Table</span>
+                  <span>{t.subviews.table}</span>
                 </button>
                 <button
                   onClick={() => setSolverSubView('evaluator')}
@@ -1038,7 +1090,7 @@ ${currentSolution.verificationSteps.composition1}
                   }`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Evaluator</span>
+                  <span>{t.subviews.evaluator}</span>
                 </button>
                 <button
                   onClick={() => setSolverSubView('calculus')}
@@ -1049,12 +1101,15 @@ ${currentSolution.verificationSteps.composition1}
                   }`}
                 >
                   <TrendingUp className="w-4 h-4" />
-                  <span>Derivative Check</span>
+                  <span>{t.subviews.calculus}</span>
                 </button>
               </div>
 
               <span className="text-xs text-slate-500 font-medium">
-                {solverSubView === 'steps' && `${currentSolution.steps.length} Algebraic Steps`}
+                {solverSubView === 'steps' && `${currentSolution.steps.length} ${t.subviewStatuses.steps}`}
+                {solverSubView === 'table' && t.subviewStatuses.table}
+                {solverSubView === 'evaluator' && t.subviewStatuses.evaluator}
+                {solverSubView === 'calculus' && t.subviewStatuses.calculus}
               </span>
             </div>
 
@@ -1064,18 +1119,18 @@ ${currentSolution.verificationSteps.composition1}
                 <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900">
-                      Step-by-Step Algebraic Derivation
+                      {t.stepsTitle}
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Exact step transformations corresponding precisely to the inverse answer
+                      {t.stepsSubtitle}
                     </p>
                   </div>
                   <button
                     onClick={copyFullSolution}
-                    className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1"
+                    className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-200 transition"
                   >
                     <Copy className="w-3.5 h-3.5" />
-                    <span>Copy All Steps</span>
+                    <span>{copiedSteps ? t.copiedNotice : t.result.copyAllSteps}</span>
                   </button>
                 </div>
 
@@ -1120,8 +1175,11 @@ ${currentSolution.verificationSteps.composition1}
                 <div className="p-4 bg-emerald-50/50 border border-emerald-200 rounded-xl space-y-2.5">
                   <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Composition Proof & Identity Check</span>
+                    <span>{t.verificationTitle}</span>
                   </div>
+                  <p className="text-xs text-emerald-800 leading-relaxed">
+                    {t.verificationDesc}
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                     <div className="bg-white p-3 rounded-lg border border-emerald-200 text-center overflow-x-auto">
                       <span className="text-slate-500 font-semibold block mb-1">Check 1: Composition f(f⁻¹(x))</span>
@@ -1169,9 +1227,9 @@ ${currentSolution.verificationSteps.composition1}
             ) : (
               <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-4">
                 <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
-                <h4 className="font-bold text-slate-800 text-base">Select a Quadratic Function</h4>
+                <h4 className="font-bold text-slate-800 text-base">{t.tabs.completingSquare}</h4>
                 <p className="text-xs text-slate-600 max-w-md mx-auto">
-                  Completing the square is exclusively used for quadratic equations where x appears in both quadratic and linear terms.
+                  {t.result.deepDivePrompt}
                 </p>
                 <button
                   onClick={() => {
@@ -1213,9 +1271,9 @@ ${currentSolution.verificationSteps.composition1}
       <footer className="bg-white border-t border-slate-200 py-6 text-xs text-slate-500 print:hidden mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span>Inverse Function Calculator</span>
+            <span>{t.appTitle}</span>
             <span>•</span>
-            <span>Author: <strong className="text-slate-800">laohu90</strong></span>
+            <span>{t.nav.authorLabel} <strong className="text-slate-800">laohu90</strong></span>
             <span>•</span>
             <a
               href="https://github.com/laohu90/inverse-function-calculator"
@@ -1236,7 +1294,7 @@ ${currentSolution.verificationSteps.composition1}
               }}
               className="hover:text-indigo-600 transition"
             >
-              About
+              {t.nav.aboutBtn}
             </button>
             <button
               onClick={() => {
@@ -1245,7 +1303,7 @@ ${currentSolution.verificationSteps.composition1}
               }}
               className="hover:text-indigo-600 transition"
             >
-              Privacy Policy
+              {t.nav.privacyBtn}
             </button>
             <button
               onClick={() => {
@@ -1254,19 +1312,19 @@ ${currentSolution.verificationSteps.composition1}
               }}
               className="hover:text-indigo-600 transition"
             >
-              Contact
+              {t.nav.contactBtn}
             </button>
             <button
               onClick={() => setIsRegressionOpen(true)}
               className="hover:text-indigo-600 transition font-medium"
             >
-              Regression (10 Cases)
+              {t.nav.regressionBtn}
             </button>
             <button
               onClick={() => setIsExportOpen(true)}
               className="hover:text-indigo-600 transition"
             >
-              Export
+              {t.result.exportBtn}
             </button>
           </div>
         </div>

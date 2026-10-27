@@ -179,8 +179,8 @@ export function solveQuadratic(
   const hlt: HorizontalLineTestResult = {
     passed: false,
     isLocallyRestricted: true,
-    title: 'Horizontal Line Test: FAILED Globally (Branch Restricted)',
-    explanation: `A full parabola is symmetrical about vertex x = ${formatNum(h)}. Any horizontal line y > ${formatNum(k)} (when a > 0) cuts the curve TWICE. To make the function one-to-one and invertible, we must restrict domain to ${domainOrig}.`,
+    title: '在全实数域上不是一一对应，以下为主值分支',
+    explanation: `二次抛物线在顶点 x = ${formatNum(h)} 两侧对称，在全实数域上不是一一对应。为求反函数，已将其定义域限制为主值单调区间 ${domainOrig}，在此区间内求得对应反函数。`,
     restrictedDomain: domainOrig,
     criticalPoints: [h],
   };
@@ -332,14 +332,14 @@ export function solvePolynomialPower(
     ? {
         passed: true,
         isLocallyRestricted: false,
-        title: 'Horizontal Line Test: PASSED (Global)',
-        explanation: `Because degree n = ${n} is odd and a = ${formatNum(a)} ≠ 0, f(x) is strictly ${a > 0 ? 'increasing' : 'decreasing'} on (-∞, ∞). Every horizontal line crosses the graph exactly once.`,
+        title: '水平线检验：通过（全实数域一一对应）',
+        explanation: `因为多项式次数 n = ${n} 为奇数且 a = ${formatNum(a)} ≠ 0，原函数 f(x) 在 (-∞, ∞) 上严格单调。任意水平线均与图像仅交于一个点，存在全域反函数。`,
       }
     : {
         passed: false,
         isLocallyRestricted: true,
-        title: 'Horizontal Line Test: FAILED Globally (Even Degree Restriction)',
-        explanation: `Even power n = ${n} makes the function symmetric about x = ${formatNum(h)}, failing the Horizontal Line Test. We restrict domain to ${domainOrig} to create a one-to-one invertible branch.`,
+        title: '在全实数域上不是一一对应，以下为主值分支',
+        explanation: `偶次幂 n = ${n} 使原函数在对称轴 x = ${formatNum(h)} 两侧对称，在全实数域上不是一一对应。为求反函数，已将其定义域限制为主值单调区间 ${domainOrig}，在此区间内求得对应反函数。`,
         restrictedDomain: domainOrig,
         criticalPoints: [h],
       };
@@ -375,8 +375,10 @@ export function solvePolynomialPower(
       title: `Take the ${n}-th Root of Both Sides`,
       latex: `${rootSymbol} = ${h !== 0 ? `y ${hTerm}` : 'y'}`,
       explanation: isOdd 
-        ? `Take the odd root ∛ or √[${n}]. Odd roots preserve sign and are defined for all real numbers without ambiguity.` 
-        : `Take the ${n}-th root. Since x was restricted to ${domainOrig}, we select the ${branch === '+' ? 'positive' : 'negative'} root.`,
+        ? (n === 3 
+            ? 'Take the cube root (∛). Odd roots preserve sign and are defined for all real numbers without ambiguity.' 
+            : `Take the ${n}-th root (√[${n}]). Odd roots are defined for all real numbers without ambiguity.`)
+        : `Take the ${n}-th root (√[${n}]). Because the domain was restricted to ${domainOrig}, we select the ${branch === '+' ? 'positive' : 'negative'} principal branch.`,
       badge: `Step 4: Take ${n}-th Root`,
     },
     {
